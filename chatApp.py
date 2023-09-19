@@ -1,10 +1,17 @@
 import os
 import csv
 import base64
+import mysql.connector
 from flask import Flask, render_template, request, redirect, session
 from flask_session import Session
 from datetime import datetime
 
+db_config = {
+    'user': 'root',
+    'password': 'root',
+    'host': 'db',  
+    'database': 'CHATAPP',
+}
 
 app = Flask(__name__, template_folder='templates')
 app.config["SESSION_PERMANENT"] = False
@@ -80,15 +87,21 @@ def login():
    session["userName"] = request.form.get("username")
    session["userPassword"] = request.form.get("password")
    encode_psw=encode(session.get("userPassword"))
-   row1 = [session.get("userName"), encode_psw]
-   with open('users.csv', 'w') as f:
-    writer = csv.writer(f)
-    writer.writerow(row1)
+   new_user_data = {
+    'username': session.get("userName"),
+    'password': encode_psw,
+   }
+   connection = mysql.connector.connect(**db_config)
+   cursor = connection.cursor()
+   insert_query = "INSERT INTO `USERS` (`userName`, `password`) VALUES (CAST(%s AS CHAR(45)), %s)"
+   cursor.execute(insert_query, (session.get("userName"), encode_psw))
+   connection.commit()
+   cursor.close()
+   connection.close()
    return redirect("lobby") 
   return render_template('login.html')
 
-@app.route("/health")
-def health(): 
+
 
 
 def encode(psw):

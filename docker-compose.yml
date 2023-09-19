@@ -1,0 +1,25 @@
+version: '2'
+
+services:
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: CHATAPP
+      # MYSQL_ROOT_USERNAME: admin    
+    ports:
+      - "3307:3306"
+
+  app:
+    build: ./
+    links:
+      - db
+    ports:
+      - "5000:5000"
+
+    # volumes:
+    #    - ./docker-entrypoint-initdb.d/:ro  
+    volumes:
+         - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:ro
+
+ 
